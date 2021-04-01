@@ -12,20 +12,20 @@ from pygame.locals import(
     K_n,
     KEYDOWN)
 
-pygame.init()
-
-font_name = pygame.font.get_default_font()
-size = 40
-font = pygame.font.Font(font_name, size)
-
-colors = {3*2 ** i: (100, 100, 100) for i in range (0, 10)}
-colors.update({0: (255, 255, 255)})
-colors.update({1:(0, 0, 255)})
-colors.update({2:(255, 0, 0)})
-
 class board():
     
     def __init__(self, height, width, number):
+        
+        pygame.init()
+        
+        self.font_name = pygame.font.get_default_font()
+        self.size = 40
+        self.font = pygame.font.Font(self.font_name, self.size)
+        
+        self.colors = {3*2 ** i: (100, 100, 100) for i in range (0, 10)}
+        self.colors.update({0: (255, 255, 255)})
+        self.colors.update({1:(0, 0, 255)})
+        self.colors.update({2:(255, 0, 0)})
         
         self.width = width
         self.height = height
@@ -165,14 +165,14 @@ class board():
             for j in range(self.number):
         
                     rect = pygame.Rect(i*width_ratio, j*height_ratio, width_ratio-2, height_ratio-2)
-                    pygame.draw.rect(self.screen, colors[self.values[i, j]], rect)
-                    number = font.render(str(int(self.values[i, j])), True, (0, 0, 0))
+                    pygame.draw.rect(self.screen, self.colors[self.values[i, j]], rect)
+                    number = self.font.render(str(int(self.values[i, j])), True, (0, 0, 0))
                     self.screen.blit(number, (i*width_ratio + 1, j*height_ratio+ 1))
         
         points_rect = pygame.Rect(0, self.height , self.width, 100)
         points = self.points()      
-        points_img = font.render('Points:' + str(points), True, (0, 0, 0))
-        next_img = font.render('Next: ' + str(self.next), True, (0, 0, 0))
+        points_img = self.font.render('Points:' + str(points), True, (0, 0, 0))
+        next_img = self.font.render('Next: ' + str(self.next), True, (0, 0, 0))
         
         pygame.draw.rect(self.screen, (255, 255, 255), points_rect)
         self.screen.blit(points_img, (1, self.height + 5))
@@ -180,29 +180,30 @@ class board():
          
         pygame.display.flip()
 
-test = board(500, 300, 4)
+if __name__ == 'main':
 
-running = True
+    test = board(500, 300, 4)
+    running = True
 
-while running:
+    while running:
     
-    for event in pygame.event.get():
+        for event in pygame.event.get():
         
-        if event.type == pygame.QUIT:
-            running = False
-        
-        if event.type == pygame.KEYDOWN:
-            
-            if event.key == K_ESCAPE:
+            if event.type == pygame.QUIT:
                 running = False
-                
-            elif event.key in [K_UP, K_DOWN, K_LEFT, K_RIGHT]:
-                name = pygame.key.name(event.key)
-                test.input(name)
-                
-            elif event.key == K_n:
-                test = board(500, 300, 4)
+        
+            if event.type == pygame.KEYDOWN:
             
-    time.sleep(0.1)
+                if event.key == K_ESCAPE:
+                    running = False
+                
+                elif event.key in [K_UP, K_DOWN, K_LEFT, K_RIGHT]:
+                    name = pygame.key.name(event.key)
+                    test.input(name)
+                
+                elif event.key == K_n:
+                    test = board(500, 300, 4)
+            
+            time.sleep(0.1)
     
-pygame.quit() 
+    pygame.quit() 
