@@ -202,6 +202,6 @@ while running:
             elif event.key == K_n:
                 test = board(500, 300, 4)
             
-    time.sleep(0.01)
+    time.sleep(0.1)
     
 pygame.quit() 
