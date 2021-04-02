@@ -1,4 +1,3 @@
-#das ist ein test
 import pygame
 import time
 import numpy as np
@@ -180,8 +179,8 @@ class board():
          
         pygame.display.flip()
 
-if __name__ == 'main':
-
+if __name__ == '__main__':
+    
     test = board(500, 300, 4)
     running = True
 
