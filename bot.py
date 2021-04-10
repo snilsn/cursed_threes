@@ -6,8 +6,8 @@ import tensorflow as tf
 
 board = threes.board(600, 300, 4)
 
-for i in range(100):
+for i in range(1000):
     board.input(rd.choice(['left', 'right', 'up', 'down'] ))
-    time.sleep(0.01)
+    time.sleep(0.1)
     
 pygame.quit()

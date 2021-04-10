@@ -16,6 +16,7 @@ class board():
     def __init__(self, height, width, number):
         
         pygame.init()
+        self.running = True
         
         self.font_name = pygame.font.get_default_font()
         self.size = 40
@@ -31,11 +32,13 @@ class board():
         self.screen = pygame.display.set_mode([width, height + 100])
         self.screen.fill((255, 255, 255))
         self.number = number
-        self.values = np.zeros((number, number))
         
+        self.values = np.zeros((number, number))
         self.rng = np.random.default_rng()
         self.spawn_numbers = [1, 2, 3, 6, 12, 24]
         self.weights = [0.4, 0.4, 0.1, 0.06, 0.02, 0.02]
+        
+        self.direction_list = ['left', 'right', 'up', 'down']
         
         for n in range(9):
             
@@ -126,6 +129,17 @@ class board():
     
     def input(self, key):
         
+        if key in self.direction_list:
+            self.move(key)
+        
+        self.check_done()
+        
+        if len(test.direction_list) == 0:
+            test.show_endscreen()
+        
+    
+    def move(self, key):
+        
         if key == 'left':
             
             self.shift_left()
@@ -155,6 +169,32 @@ class board():
     def points(self):
         return(int(np.sum(self.values)))
     
+    def check_done(self):
+
+        self.direction_list = []
+        save = np.copy(self.values)
+        
+        for direction in ['left', 'right', 'up', 'down']:
+            
+            self.move(direction)
+            
+            if np.sum(self.values != save) != 0:
+                self.direction_list.append(direction)
+                
+            self.values = np.copy(save)
+        
+    def show_endscreen(self):
+
+        self.screen.fill((255, 255, 255))
+        points = self.points()    
+        end_img = self.font.render('game over', True, (0, 0, 0))
+        points_img = self.font.render('Points:' + str(points), True, (0, 0, 0))
+        
+        self.screen.blit(end_img, (1,  5))
+        self.screen.blit(points_img, (1, 45))
+        
+        pygame.display.flip()
+        
     def show(self):
 
         width_ratio = self.width/self.number
@@ -184,25 +224,26 @@ if __name__ == '__main__':
     test = board(500, 300, 4)
     running = True
 
-    while running:
-    
+    while test.running:
         for event in pygame.event.get():
         
             if event.type == pygame.QUIT:
-                running = False
+                test.running = False
         
             if event.type == pygame.KEYDOWN:
             
                 if event.key == K_ESCAPE:
-                    running = False
+                    test.running = False
                 
                 elif event.key in [K_UP, K_DOWN, K_LEFT, K_RIGHT]:
+
                     name = pygame.key.name(event.key)
                     test.input(name)
-                
+                    test.show()
+
                 elif event.key == K_n:
                     test = board(500, 300, 4)
             
-            time.sleep(0.1)
+            time.sleep(0.01)
     
-    pygame.quit() 
+    pygame.quit()
