@@ -38,6 +38,14 @@ class board():
         self.spawn_numbers = [1, 2, 3, 6, 12, 24]
         self.weights = [0.4, 0.4, 0.1, 0.06, 0.02, 0.02]
         
+        self.points_dic = {3.0*2**(i-1):3.0**i for i in range(1, 10)}
+        self.points_dic.update({1:1})
+        self.points_dic.update({2:1})
+        self.points_dic.update({0:0})
+        self.points = 0
+        self.points = self.get_points()
+        self.reward = 0
+        
         self.direction_list = ['left', 'right', 'up', 'down']
         
         for n in range(9):
@@ -136,8 +144,8 @@ class board():
         
         if len(test.direction_list) == 0:
             test.show_endscreen()
+            self.running = False
         
-    
     def move(self, key):
         
         if key == 'left':
@@ -166,8 +174,18 @@ class board():
                     
         self.show()
     
-    def points(self):
-        return(int(np.sum(self.values)))
+    def get_points(self):
+        
+        fields = self.values.flatten()
+        points = 0
+        
+        for number in fields:
+            points += self.points_dic[number]
+        
+        self.reward = points - self.points
+        self.points = points
+        
+        return self.points
     
     def check_done(self):
 
@@ -182,11 +200,22 @@ class board():
                 self.direction_list.append(direction)
                 
             self.values = np.copy(save)
+    
+    def create_observation(self):
+        
+        self.observation = np.zeros(self.number**2 + 1)
+        
+        for i, number in enumerate(self.values.flatten()):
+            
+            self.observation[i] = number
+        self.observation[-1] = self.next
+        
+        return self.observation
         
     def show_endscreen(self):
 
         self.screen.fill((255, 255, 255))
-        points = self.points()    
+        points = self.get_points()    
         end_img = self.font.render('game over', True, (0, 0, 0))
         points_img = self.font.render('Points:' + str(points), True, (0, 0, 0))
         
@@ -209,7 +238,7 @@ class board():
                     self.screen.blit(number, (i*width_ratio + 1, j*height_ratio+ 1))
         
         points_rect = pygame.Rect(0, self.height , self.width, 100)
-        points = self.points()      
+        points = self.get_points()      
         points_img = self.font.render('Points:' + str(points), True, (0, 0, 0))
         next_img = self.font.render('Next: ' + str(self.next), True, (0, 0, 0))
         
@@ -224,26 +253,29 @@ if __name__ == '__main__':
     test = board(500, 300, 4)
     running = True
 
-    while test.running:
+    while running:
         for event in pygame.event.get():
         
             if event.type == pygame.QUIT:
-                test.running = False
+                running = False
         
             if event.type == pygame.KEYDOWN:
             
                 if event.key == K_ESCAPE:
-                    test.running = False
+                    running = False
                 
-                elif event.key in [K_UP, K_DOWN, K_LEFT, K_RIGHT]:
+                elif event.key in [K_UP, K_DOWN, K_LEFT, K_RIGHT] and test.running:
 
                     name = pygame.key.name(event.key)
                     test.input(name)
                     test.show()
-
-                elif event.key == K_n:
+                    
+                elif not test.running:
+                    test.show_endscreen()
+                    
+                if event.key == K_n:
                     test = board(500, 300, 4)
             
             time.sleep(0.01)
-    
+                
     pygame.quit()
