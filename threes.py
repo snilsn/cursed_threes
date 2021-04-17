@@ -42,11 +42,6 @@ class board():
         self.points_dic.update({1:1})
         self.points_dic.update({2:1})
         self.points_dic.update({0:0})
-        self.points = 0
-        self.points = self.get_points()
-        self.reward = 0
-        
-        self.direction_list = ['left', 'right', 'up', 'down']
         
         for n in range(9):
             
@@ -55,7 +50,12 @@ class board():
             
             self.values[i, j] = self.rng.choice(self.spawn_numbers, p = self.weights)
         
+        self.points = 0
+        self.points = self.get_points()
+        self.reward = 0
+        
         self.generate_next_number()
+        self.update_direction_list()
         self.show()
     
     def generate_next_number(self):
@@ -133,18 +133,23 @@ class board():
         if len(spawn_index_list) != 0:
             index = np.random.choice(spawn_index_list)
             self.values[self.number-1, index] = self.next
-            self.generate_next_number()
+
     
     def input(self, key):
         
         if key in self.direction_list:
             self.move(key)
+            self.generate_next_number()
         
-        self.check_done()
+        self.update_direction_list()
         
-        if len(test.direction_list) == 0:
-            test.show_endscreen()
+        if len(self.direction_list) == 0:
+            
             self.running = False
+            self.show_endscreen()
+            
+        else:
+            self.show()
         
     def move(self, key):
         
@@ -171,8 +176,6 @@ class board():
             self.shift_left()
             self.values = np.flip(self.values, axis=0)
             self.values = np.transpose(self.values)            
-                    
-        self.show()
     
     def get_points(self):
         
@@ -187,7 +190,7 @@ class board():
         
         return self.points
     
-    def check_done(self):
+    def update_direction_list(self):
 
         self.direction_list = []
         save = np.copy(self.values)
@@ -256,6 +259,9 @@ if __name__ == '__main__':
     while running:
         for event in pygame.event.get():
         
+            if not test.running:
+                test.show_endscreen()
+            
             if event.type == pygame.QUIT:
                 running = False
         
@@ -268,14 +274,8 @@ if __name__ == '__main__':
 
                     name = pygame.key.name(event.key)
                     test.input(name)
-                    test.show()
-                    
-                elif not test.running:
-                    test.show_endscreen()
                     
                 if event.key == K_n:
                     test = board(500, 300, 4)
-            
-            time.sleep(0.01)
                 
     pygame.quit()
