@@ -36,14 +36,14 @@ class board():
         self.values = np.zeros((number, number))
         self.rng = np.random.default_rng()
         self.spawn_numbers = [1, 2, 3, 6, 12, 24]
-        self.weights = [0.4, 0.4, 0.1, 0.06, 0.02, 0.02]
+        self.weights = [0.3, 0.3, 0.3, 0.06, 0.02, 0.02]
         
         self.points_dic = {3.0*2**(i-1):3.0**i for i in range(1, 10)}
         self.points_dic.update({1:1})
         self.points_dic.update({2:1})
         self.points_dic.update({0:0})
         
-        for n in range(9):
+        for n in range(1):
             
             i = self.rng.integers(0, self.number)
             j = self.rng.integers(0, self.number)

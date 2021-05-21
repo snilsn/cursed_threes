@@ -4,15 +4,17 @@ import time
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 model = tf.keras.Sequential([
     
+    tf.keras.layers.Dense(units = 182, activation = None),
     tf.keras.layers.Dense(units = 32, activation = 'relu'),
-    tf.keras.layers.Dense(units = 32, activation = 'relu'),
-    tf.keras.layers.Dense(units = 4, activation=None)
+    tf.keras.layers.Dense(units = 4, activation= 'relu')
+    
     ])
 
-optimizer = tf.keras.optimizers.Adam(learning_rate=0.1)
+optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
 
 class memory():
     
@@ -31,21 +33,27 @@ class memory():
         self.actions.append(action)
         self.rewards.append(reward)
 
+def normalize(x):
+    x = x.astype(np.float32)
+    x -= np.mean(x)
+    x /= np.std(x)
+    return x.astype(np.float32)
+
 def discount_rewards(rewards):
     
     discounted_rewards = np.zeros_like(rewards)
     R = 0
-    gamma = 0.99
+    gamma = 0.8
     
     for i in reversed(range(len(rewards))):
         R = R*gamma + rewards[i]
         discounted_rewards[i] = R
         
-    return discounted_rewards
+    return normalize(discounted_rewards)
         
 def choose_action(model, observation):
     
-    logits = model.predict(obs)
+    logits = model(obs.astype(np.float32))
     
     action_tensor = tf.random.categorical(logits, num_samples = 1)
     action_number = action_tensor[0].numpy()[0]
@@ -82,24 +90,26 @@ def train(model, optimizer, obs, actions, discounted_rewards):
         loss = compute_loss(obs, actions, discounted_rewards)
         
     grads = tape.gradient(loss, model.trainable_variables)
+
     optimizer.apply_gradients(zip(grads, model.trainable_variables))
         
-epochs = 1000
-max_N = 100
+epochs = 30000
+max_N = 1000
 point_list = []
 rewars_list = []
 
-for j in range(epochs):
+for j in tqdm(range(epochs)):
     
     board_memory = memory()
     board = threes.board(600, 300, 4)
     
-    print('epoch ' + str(j))
     i = 0
     
     while True:
     
         obs = board.create_observation()
+        
+        obs = obs / (3*2 ** 4)
         obs = np.expand_dims(obs, axis = 0)
     
         action, action_number = choose_action(model, obs)
@@ -120,18 +130,19 @@ for j in range(epochs):
         
             train(model, optimizer, np.vstack(board_memory.observations), np.array(board_memory.actions), discounted)
             
-            print('reward = ' + str(total_reward))
-            print('points = '+ str(board.points) + '\n')
-            
             point_list.append(board.points)
             rewars_list.append(total_reward)
             
             break
         
 pygame.quit()
-            
-plt.plot(np.array(point_list))   
-plt.plot(np.array(rewars_list))
+
+random_data = np.loadtxt('random_points.dat')
+
+plt.plot(np.linspace(0, epochs, epochs), np.mean(random_data)*np.ones(epochs))            
+plt.plot(np.convolve(np.array(point_list), np.ones(1000)/1000, mode='valid'))
+plt.show()   
+
    
 
     
